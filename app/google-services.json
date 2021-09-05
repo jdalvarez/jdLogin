@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "378944346534",
+    "project_id": "jdlogin-bfa70",
+    "storage_bucket": "jdlogin-bfa70.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:378944346534:android:0ba065e47d1ff0528a9767",
+        "android_client_info": {
+          "package_name": "com.example.jdlogin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "378944346534-iq3pjq811hk2kvvaivsgpja9uglmp7f1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAk12xYhfZCIZWrLFmLbk6VfITnIcP-dKI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "378944346534-iq3pjq811hk2kvvaivsgpja9uglmp7f1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

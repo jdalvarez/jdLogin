@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.JdLogin" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#184059</item>
+        <item name="colorPrimaryVariant">#5D8AA6</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnBackground">#D7D7D9</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">#BF7B3F</item>
+        <item name="colorSecondaryVariant">#8C2F1B</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+</resources>
