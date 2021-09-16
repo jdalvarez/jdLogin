@@ -3,9 +3,15 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/ic_facebook.xml" value="0.20364583333333333" />
+        <entry key="app/src/main/res/drawable/ic_phone_login.xml" value="0.36875" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="app/src/main/res/layout/fragment_auth.xml" value="0.296195652173913" />
+        <entry key="app/src/main/res/layout/fragment_phone_login.xml" value="0.35260416666666666" />
+        <entry key="app/src/main/res/layout/fragment_register.xml" value="0.2776268115942029" />
         <entry key="app/src/main/res/layout/fragment_user_profile.xml" value="0.296195652173913" />
+        <entry key="app/src/main/res/layout/fragment_verify.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/prueba.xml" value="0.35260416666666666" />
       </map>
     </option>
   </component>

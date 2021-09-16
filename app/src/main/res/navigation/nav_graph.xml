@@ -12,6 +12,9 @@
         <action
             android:id="@+id/action_authFragment_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_authFragment_to_phoneLoginFragment"
+            app:destination="@id/phoneLoginFragment" />
     </fragment>
     <fragment
         android:id="@+id/userProfileFragment"
@@ -20,5 +23,35 @@
         <action
             android:id="@+id/action_userProfileFragment_to_authFragment"
             app:destination="@id/authFragment" />
+        <argument
+            android:name="email"
+            app:argType="string" />
+        <argument
+            android:name="provider"
+            app:argType="com.example.jdlogin.ui.ProviderType" />
+    </fragment>
+    <fragment
+        android:id="@+id/verifyFragment"
+        android:name="com.example.jdlogin.ui.VerifyFragment"
+        android:label="fragment_verify"
+        tools:layout="@layout/fragment_verify" >
+        <action
+            android:id="@+id/action_verifyFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+        <argument
+            android:name="storeVerificationId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/phoneLoginFragment"
+        android:name="com.example.jdlogin.ui.PhoneLoginFragment"
+        android:label="fragment_phone_login"
+        tools:layout="@layout/fragment_phone_login" >
+        <action
+            android:id="@+id/action_phoneLoginFragment_to_verifyFragment"
+            app:destination="@id/verifyFragment" />
+        <action
+            android:id="@+id/action_phoneLoginFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
     </fragment>
 </navigation>
