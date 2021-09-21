@@ -66,7 +66,7 @@ class VerifyFragment : Fragment() {
 
     private fun phoneLogin() {
         val phoneLoginAction =
-            VerifyFragmentDirections.actionVerifyFragmentToUserProfileFragment("")
+            VerifyFragmentDirections.actionVerifyFragmentToUserProfileFragment()
         findNavController().navigate(phoneLoginAction)
     }
 

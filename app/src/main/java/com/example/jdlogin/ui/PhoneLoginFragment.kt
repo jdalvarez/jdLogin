@@ -120,7 +120,7 @@ class PhoneLoginFragment : Fragment() {
 
     private fun showProfile() {
         val loginAction =
-            PhoneLoginFragmentDirections.actionPhoneLoginFragmentToUserProfileFragment("")
+            PhoneLoginFragmentDirections.actionPhoneLoginFragmentToUserProfileFragment()
         findNavController().navigate(loginAction)
     }
 

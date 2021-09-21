@@ -1,21 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.JdLogin" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.transparent" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">#184059</item>
-        <item name="colorPrimaryVariant">#5D8AA6</item>
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="colorOnBackground">#D7D7D9</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">#FF018786</item>
-        <item name="colorSecondaryVariant">#8C2F1B</item>
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
-    </style>
-
-    <style name="Transparent" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowFullscreen">true</item>
     </style>
+
 </resources>

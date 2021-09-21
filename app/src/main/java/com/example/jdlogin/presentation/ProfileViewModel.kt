@@ -1,37 +1,62 @@
 package com.example.jdlogin.presentation
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.liveData
-import com.example.jdlogin.core.Response
+import androidx.lifecycle.*
 import com.example.jdlogin.repo.LoginRepo
+import com.example.jdlogin.ui.Client
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ProfileViewModel(private val repo: LoginRepo): ViewModel() {
 
-    fun saveData(userName :String, firstName: String, lastName: String, age: String, birthDate: String, phoneNumber: String) =  liveData(Dispatchers.IO){
-        emit(Response.Loading())
-        try {
-            emit(Response.Success(repo.saveData(userName, firstName, lastName, age, birthDate, phoneNumber)))
-        }catch (e: Exception){
-            emit(Response.Failure(e))
-        }
-    }
+    private val auth by lazy { FirebaseAuth.getInstance() }
 
-    fun readData() =  liveData(Dispatchers.IO){
-        emit(Response.Loading())
-        try {
-            val client = repo.readClient()
-            if(client != null) {
-                emit(Response.Success(client))
-            } else {
-                emit(Response.Failure(Exception("Could not find data")))
+    val navigateToLogin = SingleLiveEvent<Boolean>()
+    val loadingLiveData = MutableLiveData<Boolean>()
+    val clientLiveData = MutableLiveData<Client>()
+
+    fun onViewCreated(){
+        val currentUser = auth.currentUser
+        if (currentUser == null){
+            navigateToLogin.value = true
+        }else {
+            viewModelScope.launch (Dispatchers.IO){
+                val result = repo.readClient()
+                withContext(Dispatchers.Main){
+                    result?.let { clientLiveData.value = it }
+                }
             }
-        }catch (e: Exception){
-            emit(Response.Failure(e))
+        }
+    }
+    fun logout(){
+        loadingLiveData.value = true
+        auth.signOut()
+        navigateToLogin.value = true
+    }
+
+    fun saveData(firstName: String, lastName: String, age: String, birthDate: String) {
+        loadingLiveData.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            val phone: String = auth.currentUser?.phoneNumber ?: ""
+            repo.saveData(firstName, lastName, age, birthDate, phone)
+            withContext(Dispatchers.Main) {
+                loadingLiveData.value = false
+                readData()
+            }
         }
     }
 
+    fun readData() {
+        loadingLiveData.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            val client = repo.readClient()
+            withContext(Dispatchers.Main) {
+                client?.let {  clientLiveData.value = it }
+                loadingLiveData.value = false
+            }
+        }
+    }
 }
 
 class ProfileViewModelFactory(private val repo: LoginRepo): ViewModelProvider.Factory{

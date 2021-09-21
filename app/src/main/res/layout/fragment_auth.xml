@@ -23,7 +23,9 @@
             android:id="@+id/et_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"
+            app:hintEnabled="false"
+            android:importantForAutofill="no"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -45,7 +47,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"
+            app:hintEnabled="false"
+            android:importantForAutofill="no"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 

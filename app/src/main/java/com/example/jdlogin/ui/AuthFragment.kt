@@ -33,144 +33,79 @@ import com.google.firebase.ktx.Firebase
 
 
 class AuthFragment : Fragment() {
-    private val viewModel by viewModels<AuthViewModel> {
-        AuthViewModelFactory(
-            LoginRepoImpl(
-                LoginDataSource()
-            )
-        )
-    }
-    private lateinit var analytics: FirebaseAnalytics
-    private lateinit var binding: FragmentAuthBinding
-    private val auth by lazy { FirebaseAuth.getInstance() }
-    private val GOOGLE_SIGN_IN = 100
-    private val callbackManager = CallbackManager.Factory.create()
+    private val viewModel by viewModels<AuthViewModel> { AuthViewModelFactory(LoginRepoImpl(LoginDataSource())) }
 
+    private val callbackManager by lazy { CallbackManager.Factory.create() }
+    private lateinit var binding: FragmentAuthBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentAuthBinding.inflate(inflater, container, false)
-
-        // Obtain the FirebaseAnalytics instance.
-        analytics = Firebase.analytics
-        //Analytics Event
-        analytics.logEvent(
-            "InitScreen",
-            Bundle().apply { putString("message", "Integracion de firebase complete") })
-
+        setupObservers()
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setup()
-        checkIfUserIsLoggedIn()
+        viewModel.onViewCreated(callbackManager)
+        setupClickListener()
     }
 
-    override fun onResume() {
-        super.onResume()
-        showLoading(false)
-    }
-
-
-    private fun setup() {
-        binding.btnRegister.setOnClickListener { doEmailRegister() }
-        binding.btnLogin.setOnClickListener { doEmailLogin() }
+    private fun setupClickListener() {
+        binding.btnRegister.setOnClickListener { showLoading(true)
+            doEmailRegister() }
+        binding.btnLogin.setOnClickListener { showLoading(true)
+            doEmailLogin() }
         binding.icGoogle.setOnClickListener { doGoogleLogin()
             showLoading(true)}
-        binding.icFacebook.setOnClickListener { doFacebookLogin()
-            showLoading(true)}
-        binding.icPhone.setOnClickListener { showPhoneLogin() }
-    }
-
-    private fun createUser(email: String, pass: String) {
-        viewModel.signUp(email, pass).observe(viewLifecycleOwner, { result ->
-            when (result) {
-                is Response.Loading -> {
-                    showLoading(isLoading = true)
-                }
-                is Response.Success -> {
-                    showLoading(isLoading = false)
-                    showProfile(email)
-                }
-                is Response.Failure -> {
-                    showLoading(isLoading = false)
-                    Toast.makeText(requireContext(), "Error: ${result.exception}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
-    }
-
-    private fun signIn(email: String, pass: String) {
-        viewModel.signIn(email, pass).observe(viewLifecycleOwner, { result ->
-            when (result) {
-                is Response.Loading -> {
-                    showLoading(isLoading = true)
-                }
-                is Response.Success -> {
-                    showLoading(isLoading = false)
-                    showProfile(email)
-                }
-                is Response.Failure -> {
-                    showLoading(isLoading = false)
-                    Toast.makeText(
-                        requireContext(),
-                        "Error: ${result.exception}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        })
+        binding.icFacebook.setOnClickListener { showLoading(true)
+            viewModel.doFacebookLogin(this) }
+        binding.icPhone.setOnClickListener { showLoading(true)
+            viewModel.doPhoneLogin() }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         callbackManager.onActivityResult(requestCode, resultCode, data) //facebook
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == GOOGLE_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                if (account != null) {
-                    val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                    FirebaseAuth.getInstance()
-                        .signInWithCredential(credential)
-                        .addOnCompleteListener {
-                            showLoading(false)
-                            if (it.isSuccessful) {
-                                showProfile(account.email ?: "")
-                            } else {
-                                showAlert()
-                            }
-                        }
-                }
-            } catch (e: ApiException) {
-                showAlert()
+            GoogleSignIn.getSignedInAccountFromIntent(data).getResult(ApiException::class.java)?.let {
+                viewModel.onGoogleSignInResult(it)
             }
         }
     }
 
-    private fun showAlert() {
+    private fun showAlert(msg: String?) {
         val builder = AlertDialog.Builder(context)
         builder.setTitle("Error")
-        builder.setMessage("Something has hapend, please try again")
+        builder.setMessage(msg)
         builder.setPositiveButton("Accept", null)
         val dialog: AlertDialog = builder.create()
         dialog.show()
     }
 
-    private fun showProfile(email: String) {
+    private fun showProfile() {
         val loginAction =
-            AuthFragmentDirections.actionAuthFragmentToUserProfileFragment(email)
+            AuthFragmentDirections.actionAuthFragmentToUserProfileFragment()
         findNavController().navigate(loginAction)
     }
 
-    private fun checkIfUserIsLoggedIn() {
-        auth.currentUser?.let {
-            showProfile(auth.currentUser!!.email.toString())
+    private fun setupObservers(){
+        viewModel.navigateToProfile.observe(viewLifecycleOwner){
+            showProfile()
+        }
+        viewModel.loadingLiveData.observe(viewLifecycleOwner) {
+            showLoading(it)
+        }
+        viewModel.showErrorLiveData.observe(viewLifecycleOwner) {
+            showAlert(it)
+        }
+        viewModel.navigateToPhoneLogin.observe(viewLifecycleOwner) {
+            showPhoneLogin()
         }
     }
+
 
     private fun showPhoneLogin() {
         val toPhoneAction =
@@ -215,47 +150,14 @@ class AuthFragment : Fragment() {
         startActivityForResult(googleClient.signInIntent, GOOGLE_SIGN_IN)
     }
 
-    private fun doFacebookLogin() {
-        LoginManager.getInstance().logInWithReadPermissions(this, listOf("email"))
-        LoginManager.getInstance().registerCallback(callbackManager,
-            object : FacebookCallback<LoginResult> {
-                override fun onSuccess(result: LoginResult?) {
-                    result?.let {
-                        val token = it.accessToken
-
-                        val credential = FacebookAuthProvider.getCredential(token.token)
-                        FirebaseAuth.getInstance()
-                            .signInWithCredential(credential)
-                            .addOnCompleteListener {
-                                showLoading(false)
-                                if (it.isSuccessful) {
-                                    LoginManager.getInstance().logOut()
-                                    showProfile(it.result?.user?.email ?: "")
-                                } else {
-                                    showAlert()
-                                }
-                            }
-                    }
-                }
-
-                override fun onCancel() {
-                }
-
-                override fun onError(error: FacebookException?) {
-                    showAlert()
-                }
-
-            })
-    }
-
     private fun doEmailRegister() {
         val email = binding.etEmail.text.toString().trim()
         val pass = binding.etPassword.text.toString().trim()
         if (validateFormData(email, pass)) {
-            createUser(email, pass)
+            viewModel.signUp(email, pass)
         } else {
             // Show error, please complete user/pass
-            showAlert()
+            showAlert("Please enter email/pass")
         }
     }
 
@@ -264,10 +166,14 @@ class AuthFragment : Fragment() {
         val pass = binding.etPassword.text.toString().trim()
         //Only Check if the email and pass are not empty
         if (validateFormData(email, pass)) {
-            signIn(email, pass)
+            viewModel.signIn(email, pass)
         } else {
-            showAlert()
+            showAlert("Please enter email/pass")
         }
+    }
+
+    companion object {
+        private const val GOOGLE_SIGN_IN = 100
     }
 }
 

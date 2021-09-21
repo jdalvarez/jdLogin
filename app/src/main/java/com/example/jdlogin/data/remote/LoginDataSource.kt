@@ -14,9 +14,11 @@ class LoginDataSource {
 
     suspend fun signIn(email: String, password: String): FirebaseUser? {
         return withContext(Dispatchers.IO) {
-            val authResult =
-                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()
-            authResult.user
+            try {
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await().user
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 
@@ -28,15 +30,15 @@ class LoginDataSource {
         }
     }
 
-    suspend fun saveData(
-        userName: String, firstName: String, lastName: String, age: String,
+    suspend fun saveData(firstName: String, lastName: String, age: String,
         birthDate: String, phoneNumber: String
     ) {
         val authResult = FirebaseAuth.getInstance().currentUser
+
         if (authResult != null) {
             withContext(Dispatchers.IO) {
                 val database = FirebaseDatabase.getInstance().getReference("Clients")
-                val client = Client(userName, firstName, lastName, age, birthDate, phoneNumber)
+                val client = Client(firstName, lastName, age, birthDate, phoneNumber, getDisplayName(authResult))
                 database.child(authResult.uid).setValue(client).await()
             }
         }else{
@@ -56,6 +58,20 @@ class LoginDataSource {
             }
         }
         return result
+    }
+
+    private fun getDisplayName(user: FirebaseUser?): String {
+        var displayName = ""
+        if(user?.displayName.isNullOrEmpty()) {
+            if(user?.phoneNumber.isNullOrEmpty()) {
+                displayName = user?.email.toString()
+            } else {
+                displayName = user?.phoneNumber.toString()
+            }
+        } else {
+            displayName = user?.displayName.toString()
+        }
+        return displayName
     }
 }
 

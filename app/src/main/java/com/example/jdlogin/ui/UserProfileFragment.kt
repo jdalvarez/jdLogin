@@ -20,62 +20,43 @@ import com.google.firebase.database.FirebaseDatabase
 
 class UserProfileFragment : Fragment() {
 
-    private val viewModel by viewModels<ProfileViewModel> {
-        ProfileViewModelFactory(
-            LoginRepoImpl(
-                LoginDataSource()
-            )
-        )
-    }
+    private val viewModel by viewModels<ProfileViewModel> { ProfileViewModelFactory(LoginRepoImpl(LoginDataSource())) }
     private lateinit var binding: FragmentUserProfileBinding
-    lateinit var auth: FirebaseAuth
-    private lateinit var database: DatabaseReference
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentUserProfileBinding.inflate(inflater, container, false)
+        setupObservers()
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        auth = FirebaseAuth.getInstance()
-        setLogOut()
-        val currentUser = auth.currentUser
+        viewModel.onViewCreated()
 
-        if (currentUser == null) {
-            showLogin()
-        } else {
-            readClient(currentUser.uid)
-            if (currentUser.displayName == "" || currentUser.displayName == null) {
-                binding.userName.text = currentUser.phoneNumber
-            } else {
-                binding.userName.text = currentUser.displayName
-            }
+        binding.btnLogout.setOnClickListener {
+            viewModel.logout()
         }
-
-        saveClient()
+        binding.btnSave.setOnClickListener {
+            val firstName = binding.etName.text.toString()
+            val lastName = binding.etLastname.text.toString()
+            val age = binding.etAge.text.toString()
+            val birthDate = binding.etDate.text.toString()
+            viewModel.saveData(firstName, lastName, age, birthDate)
+        }
     }
 
-    private fun readClient(id: String) {
-        viewModel.readData().observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is Response.Loading -> {
-                    showLoading(isLoading = true)
-                }
-                is Response.Success -> {
-                    showLoading(isLoading = false)
-                    enableDisableFields(false)
-                    loadClientData(result.data)
-                }
-                is Response.Failure -> {
-                    showLoading(isLoading = false)
-                    enableDisableFields(true)
-                    Toast.makeText(context, "Something was wrong, please try again", Toast.LENGTH_SHORT).show()
-                }
-            }
+    private fun setupObservers(){
+        viewModel.clientLiveData.observe(viewLifecycleOwner) {
+            loadClientData(it)
+        }
+        viewModel.loadingLiveData.observe(viewLifecycleOwner) {
+            showLoading(it)
+        }
+        viewModel.navigateToLogin.observe(viewLifecycleOwner) {
+            showLogin()
         }
     }
 
@@ -84,6 +65,8 @@ class UserProfileFragment : Fragment() {
         binding.etLastname.setText(client.lastName)
         binding.etAge.setText(client.age)
         binding.etDate.setText(client.dateOfBirth)
+        binding.userName.setText(client.displayName)
+        enableDisableFields(false)
     }
 
     private fun enableDisableFields(enable: Boolean) {
@@ -92,47 +75,6 @@ class UserProfileFragment : Fragment() {
         binding.etAge.isEnabled = enable
         binding.etDate.isEnabled = enable
         binding.btnSave.visibility = if (enable) View.VISIBLE else View.INVISIBLE
-    }
-
-    private fun saveClient() {
-        binding.btnSave.setOnClickListener {
-            val id = auth.currentUser?.uid ?: ""
-            val userName = auth.currentUser?.displayName
-            val firstName = binding.etName.text.toString()
-            val lastName = binding.etLastname.text.toString()
-            val age = binding.etAge.text.toString()
-            val birthDate = binding.etDate.text.toString()
-            val phoneNumber = auth.currentUser?.phoneNumber
-
-            viewModel.saveData(
-                userName ?: auth.currentUser?.email.toString(),
-                firstName,
-                lastName,
-                age,
-                birthDate,
-                phoneNumber ?: ""
-            ).observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is Response.Loading -> {
-                        showLoading(isLoading = true)
-                    }
-                    is Response.Success -> {
-                        showLoading(isLoading = false)
-                        Toast.makeText(context, "Client saved", Toast.LENGTH_SHORT).show()
-                        readClient(id)
-                    }
-                    is Response.Failure -> {
-                        showLoading(isLoading = false)
-                        Toast.makeText(
-                            context,
-                            "Something was wrong, please try again",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-
-            }
-        }
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -144,13 +86,6 @@ class UserProfileFragment : Fragment() {
             binding.progressBar.visibility = View.INVISIBLE
             binding.btnSave.isEnabled = true
             binding.btnLogout.isEnabled = true
-        }
-    }
-
-    private fun setLogOut() {
-        binding.btnLogout.setOnClickListener {
-            auth.signOut()
-            showLogin()
         }
     }
 
