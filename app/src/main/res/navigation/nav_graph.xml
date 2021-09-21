@@ -11,10 +11,18 @@
         tools:layout="@layout/fragment_user_profile" >
         <action
             android:id="@+id/action_authFragment_to_userProfileFragment"
-            app:destination="@id/userProfileFragment" />
+            app:destination="@id/userProfileFragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
         <action
             android:id="@+id/action_authFragment_to_phoneLoginFragment"
-            app:destination="@id/phoneLoginFragment" />
+            app:destination="@id/phoneLoginFragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
     </fragment>
     <fragment
         android:id="@+id/userProfileFragment"
@@ -22,13 +30,14 @@
         android:label="UserProfileFragment" >
         <action
             android:id="@+id/action_userProfileFragment_to_authFragment"
-            app:destination="@id/authFragment" />
+            app:destination="@id/authFragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
         <argument
             android:name="email"
             app:argType="string" />
-        <argument
-            android:name="provider"
-            app:argType="com.example.jdlogin.ui.ProviderType" />
     </fragment>
     <fragment
         android:id="@+id/verifyFragment"
@@ -37,7 +46,11 @@
         tools:layout="@layout/fragment_verify" >
         <action
             android:id="@+id/action_verifyFragment_to_userProfileFragment"
-            app:destination="@id/userProfileFragment" />
+            app:destination="@id/userProfileFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <argument
             android:name="storeVerificationId"
             app:argType="string" />
@@ -49,9 +62,24 @@
         tools:layout="@layout/fragment_phone_login" >
         <action
             android:id="@+id/action_phoneLoginFragment_to_verifyFragment"
-            app:destination="@id/verifyFragment" />
+            app:destination="@id/verifyFragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
         <action
             android:id="@+id/action_phoneLoginFragment_to_userProfileFragment"
-            app:destination="@id/userProfileFragment" />
+            app:destination="@id/userProfileFragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
+        <action
+            android:id="@+id/action_phoneLoginFragment_to_authFragment"
+            app:destination="@id/authFragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_left" />
     </fragment>
 </navigation>

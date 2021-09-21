@@ -9,9 +9,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.jdlogin.R
+import com.example.jdlogin.data.remote.LoginDataSource
 import com.example.jdlogin.databinding.FragmentPhoneLoginBinding
+import com.example.jdlogin.presentation.AuthViewModel
+import com.example.jdlogin.presentation.AuthViewModelFactory
+import com.example.jdlogin.repo.LoginRepoImpl
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
@@ -21,118 +26,102 @@ import java.util.concurrent.TimeUnit
 
 
 class PhoneLoginFragment : Fragment() {
-  private lateinit var binding:FragmentPhoneLoginBinding
-  lateinit var auth: FirebaseAuth
-  lateinit var storedVerificationId:String
-  lateinit var resendToken: PhoneAuthProvider.ForceResendingToken
-  private lateinit var callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
+    private val viewModel by viewModels<PhoneLoginViewModel> {
+        PhoneLoginViewModelFactory(
+            FirebaseAuth.getInstance()
+        )
+    }
 
+    private lateinit var binding: FragmentPhoneLoginBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-       binding = FragmentPhoneLoginBinding.inflate(inflater,container,false)
+        binding = FragmentPhoneLoginBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        auth = FirebaseAuth.getInstance()
-
-        val user = auth.currentUser
-        if (user != null){
-            showLogin()
-            auth.signOut()
-        }
+        setupObservers()
+        viewModel.onViewCreated()
 
         binding.loginBtn.setOnClickListener {
-            sendOTP()
+            if (validateFields()) {
+                viewModel.sendVerificationCodeOTP(
+                    binding.countryCode.text.toString(),
+                    binding.phoneNumber.text.toString(),
+                    requireActivity()
+                )
+            }
         }
+    }
 
-        callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks(){
-            override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                signIn(credential)
-            }
-
-            override fun onVerificationFailed(e: FirebaseException) {
-                binding.textProcess.apply {
-                    text = e.message
-                    setTextColor(Color.RED)
-                    visibility = View.VISIBLE
-                }
-            }
-
-            override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
-                // The SMS verification code has been sent to the provided phone number, we
-                // now need to ask the user to enter the code and then construct a credential
-                // by combining the code with a verification ID.
-                Log.d(TAG, "onCodeSent:$verificationId")
-
-                // Save verification ID and resending token so we can use them later
-                storedVerificationId = verificationId
-                resendToken = token
-                binding.textProcess.apply {
-                    text = getString(R.string.OTP_sent)
-                    setTextColor(Color.GREEN)
-                    visibility = View.VISIBLE
-                }
-                showVerify(storedVerificationId)
+    fun setupObservers() {
+        viewModel.loadingLiveData.observe(viewLifecycleOwner) {
+            showLoading(it)
+        }
+        viewModel.navigateToLogin.observe(viewLifecycleOwner) {
+            showLogin()
+        }
+        viewModel.navigateToVerify.observe(viewLifecycleOwner) {
+            it?.let{
+                showVerify(it)
             }
 
         }
-
-
-    }
-
-    private fun showLogin() {
-        PrefsProvider.clear(requireContext())
-        val logoutAction = UserProfileFragmentDirections.actionUserProfileFragmentToAuthFragment()
-        findNavController().navigate(logoutAction)
-    }
-
-    private fun sendOTP(){
-        val countryCode = binding.countryCode.text
-        val phone = binding.phoneNumber.text
-        val phoneNumber = "+$countryCode $phone"
-        if (countryCode.isNotEmpty() || phone.isNotEmpty()){
-            val options = PhoneAuthOptions.newBuilder(auth)
-                .setPhoneNumber(phoneNumber)                    // Phone number to verify
-                .setTimeout(60L, TimeUnit.SECONDS)      // Timeout and unit
-                .setActivity(requireActivity())                // Activity (for callback binding)
-                .setCallbacks(callbacks)                       // OnVerificationStateChangedCallbacks
-                .build()
-            PhoneAuthProvider.verifyPhoneNumber(options)
-        }else{
+        viewModel.navigateToProfile.observe(viewLifecycleOwner) {
+            showProfile()
+        }
+        viewModel.onShowVerificationError.observe(viewLifecycleOwner) {
             binding.textProcess.apply {
-                text = getString(R.string.process_text_fail)
+                text = it
                 setTextColor(Color.RED)
                 visibility = View.VISIBLE
             }
         }
     }
 
+    private fun showLoading(isLoading: Boolean) {
+        binding.countryCode.apply {
+            isEnabled = !isLoading
+            alpha = if (isLoading) 0.2F else 1.0F
+        }
+        binding.phoneNumber.apply {
+            isEnabled = !isLoading
+            alpha = if (isLoading) 0.2F else 1.0F
+        }
+        binding.progressBar.apply {
+            visibility = if (isLoading) View.VISIBLE else View.INVISIBLE
+        }
+    }
+
+    private fun validateFields(): Boolean {
+        val validCountryCode =
+            UiUtils.validateField(binding.countryCode, "Please enter country code")
+        val validPhoneNumber =
+            UiUtils.validateField(binding.phoneNumber, "Please enter a phone number")
+
+        return validCountryCode && validPhoneNumber
+    }
+
+    private fun showLogin() {
+        val logoutAction = PhoneLoginFragmentDirections.actionPhoneLoginFragmentToAuthFragment()
+        findNavController().navigate(logoutAction)
+    }
+
     private fun showVerify(storedVerificationId: String) {
-        val goVerifyAction = PhoneLoginFragmentDirections.actionPhoneLoginFragmentToVerifyFragment(storedVerificationId)
+        val goVerifyAction = PhoneLoginFragmentDirections.actionPhoneLoginFragmentToVerifyFragment(
+            storedVerificationId
+        )
         findNavController().navigate(goVerifyAction)
     }
 
-    private fun showProfile(email: String, provider: ProviderType) {
-        val loginAction = PhoneLoginFragmentDirections.actionPhoneLoginFragmentToUserProfileFragment(email,provider)
+    private fun showProfile() {
+        val loginAction =
+            PhoneLoginFragmentDirections.actionPhoneLoginFragmentToUserProfileFragment("")
         findNavController().navigate(loginAction)
-    }
-    private fun signIn(credential: PhoneAuthCredential){
-        auth.signInWithCredential(credential).addOnCompleteListener{
-            if (it.isSuccessful) {
-                showProfile( "", ProviderType.PHONE)
-            } else {
-                binding.textProcess.apply {
-                    text = it.exception?.message
-                    setTextColor(Color.RED)
-                    visibility = View.VISIBLE
-                }
-            }
-        }
     }
 
 
