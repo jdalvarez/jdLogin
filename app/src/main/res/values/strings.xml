@@ -17,8 +17,6 @@
     <string name="user">User</string>
     <string name="icon_facebook">icon Facebook</string>
     <string name="icon_phone">Icon Phone</string>
-    <string name="facebook_app_id">1755911914604616</string>
-    <string name="fb_login_protocol_scheme">fb1755911914604616</string>
     <string name="verify_phone_number">Verify mobile</string>
     <string name="a_verification_code_will_be_sent_to_your_number">A verification code will be sent to your number.</string>
     <string name="phone">phone</string>
@@ -30,5 +28,9 @@
     <string name="intercorp_logo">Intercorp Logo</string>
     <string name="process_text_fail">Please Enter Your Country code and Phone Number</string>
     <string name="OTP_sent">OTP has been Sent</string>
+    <string name="facebook_app_id">2569738449823189</string>
+    <string name="fb_login_protocol_scheme">fb2569738449823189</string>
+
+
 
 </resources>

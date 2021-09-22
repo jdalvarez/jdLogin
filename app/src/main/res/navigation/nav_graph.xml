@@ -6,7 +6,7 @@
     app:startDestination="@id/authFragment">
     <fragment
         android:id="@+id/authFragment"
-        android:name="com.example.jdlogin.ui.AuthFragment"
+        android:name="com.jdal.jdlogin.ui.AuthFragment"
         android:label="fragment_user_profile"
         tools:layout="@layout/fragment_user_profile" >
         <action
@@ -26,7 +26,7 @@
     </fragment>
     <fragment
         android:id="@+id/userProfileFragment"
-        android:name="com.example.jdlogin.ui.UserProfileFragment"
+        android:name="com.jdal.jdlogin.ui.UserProfileFragment"
         android:label="UserProfileFragment" >
         <action
             android:id="@+id/action_userProfileFragment_to_authFragment"
@@ -38,7 +38,7 @@
     </fragment>
     <fragment
         android:id="@+id/verifyFragment"
-        android:name="com.example.jdlogin.ui.VerifyFragment"
+        android:name="com.jdal.jdlogin.ui.VerifyFragment"
         android:label="fragment_verify"
         tools:layout="@layout/fragment_verify" >
         <action
@@ -54,7 +54,7 @@
     </fragment>
     <fragment
         android:id="@+id/phoneLoginFragment"
-        android:name="com.example.jdlogin.ui.PhoneLoginFragment"
+        android:name="com.jdal.jdlogin.ui.PhoneLoginFragment"
         android:label="fragment_phone_login"
         tools:layout="@layout/fragment_phone_login" >
         <action
